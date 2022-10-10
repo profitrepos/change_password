@@ -113,7 +113,7 @@ h6 {
   align-items: center;
   justify-content: center;
 }
-.form.closed {
+.form.hide {
   display: none;
 }
 .form__header {
@@ -146,6 +146,28 @@ h6 {
 .form__btn:disabled {
   background-color: rgba(34, 60, 80, 0.2);
 }
+#sms_input {
+  height: 40px;
+  border-radius: 5px;
+  margin-top: 20px;
+  background-color: #ebf0fa;
+  font-size: 16px;
+  padding-left: 15px;
+  letter-spacing: 42px;
+  border: 0;
+  background-image: linear-gradient(
+    to left,
+    #1d3972 70%,
+    rgba(255, 255, 255, 0) 0%
+  );
+  background-position: bottom;
+  background-size: 50px 2px;
+  background-repeat: repeat-x;
+  background-position-x: 39px;
+  background-position-y: 33px;
+  width: 193px;
+  outline: none;
+}
 .loader {
   display: none;
   border: 8px solid #f3f3f3; /* Light grey */
@@ -170,6 +192,12 @@ h6 {
 .form__error.show {
   visibility: visible;
   opacity: 1;
+}
+
+.success {
+  text-align: center;
+  font-size: 20px;
+  margin-top: 15px;
 }
 
 @keyframes spin {

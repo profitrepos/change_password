@@ -1,4 +1,4 @@
-function maskPhone(selector, masked = "+7 (___) ___-__-__") {
+const maskPhone = (selector, masked = "+7 (___) ___-__-__") => {
   const elem = document.querySelector(selector);
 
   function mask(event) {
@@ -37,19 +37,95 @@ function maskPhone(selector, masked = "+7 (___) ___-__-__") {
   elem.addEventListener("input", mask);
   elem.addEventListener("focus", mask);
   elem.addEventListener("blur", mask);
+};
+
+const normalizePhoneNumber = (phone) => {
+  return phone.replace(/[^\d]/g, "");
+};
+
+const toggleLoader = () => {
+  const loader = document.querySelector("#loader");
+  loader.classList.toggle("active");
+};
+
+const hideForm = (selector) => {
+  const form = document.querySelector(selector);
+  form.classList.add("hide");
+};
+
+const showForm = (selector) => {
+  const form = document.querySelector(selector);
+  form.classList.remove("hide");
+};
+
+const showError = (selector, text) => {
+  const element = document.querySelector(selector);
+  element.classList.add("show");
+  element.innerHTML = text;
+};
+
+const hideError = (selector) => {
+  const element = document.querySelector(selector);
+  element.classList.remove("show");
+  element.innerHTML = "";
+};
+
+const pincodeHandler = async (value) => {
+  if (value.length === 4) {
+    hideForm("#sms_form");
+    toggleLoader();
+    setTimeout(() => {
+      toggleLoader();
+
+      if (getRndInteger(1, 5) < 3) {
+        showForm("#sms_form");
+        showError("#sms_error", "СМС код не найден");
+      } else {
+        showForm("#success_form");
+      }
+    }, 1500);
+  }
+};
+
+function getRndInteger(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
 document.addEventListener("DOMContentLoaded", () => {
+  /* 1 форма с телефоном */
   const phoneNumberSubmitBtn = document.querySelector(
     "#phone_number_submit-btn"
   );
   const phoneNumberInput = document.querySelector("#phone_number_input");
   const phoneNumberForm = document.querySelector("#phone_number_form");
-  const phoneNumberError = document.querySelector("#phone_number_error");
+
+  phoneNumberInput.addEventListener("input", (e) => {
+    phoneNumberSubmitBtn.disabled = e.target.value.length === 18 ? false : true;
+  });
 
   phoneNumberForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    console.log(e);
+    hideForm("#phone_number_form");
+    toggleLoader();
+    setTimeout(() => {
+      toggleLoader();
+      if (getRndInteger(1, 5) < 3) {
+        showForm("#phone_number_form");
+        showError("#phone_number_error", "Ошибка при проверке номера телефона");
+      } else {
+        showForm("#sms_form");
+      }
+    }, 1500);
   });
 
   maskPhone("#phone_number_input");
+
+  /* 2 форма с смс */
+
+  new PincodeInput("#sms_code", {
+    count: 4,
+    secure: false,
+    previewDuration: 200,
+    onInput: pincodeHandler,
+  });
 });

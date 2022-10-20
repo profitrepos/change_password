@@ -22,7 +22,8 @@
         <h1>Сброс пароля</h1>
       </div>
       <div class="content">
-        <form class="form" id="phone_number_form">
+        <div class="org_error" id="org_error">Не найдена организация</div>
+        <form class="form hide" id="phone_number_form">
           <div class="form__header">Введите номер телефона</div>
           <div class="form__error" id="phone_number_error"></div>
           <input
@@ -62,7 +63,7 @@
             >Вам была отправлена СМС с временным паролем.</span
           >
         </div>
-        <div class="loader" id="loader"></div>
+        <div class="loader active" id="loader"></div>
       </div>
     </div>
     <script src="./js/pincode.js"></script>

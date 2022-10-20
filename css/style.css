@@ -200,7 +200,8 @@ h6 {
 .loader.active {
   display: block;
 }
-.form__error {
+.form__error,
+.org_error {
   text-align: center;
   margin: 10px 0px;
   color: red;
@@ -208,7 +209,11 @@ h6 {
   opacity: 0;
   transition: all 0.3s ease;
 }
-.form__error.show {
+.org_error {
+  font-size: 20px;
+}
+.form__error.show,
+.org_error.show {
   visibility: visible;
   opacity: 1;
 }

@@ -43,6 +43,16 @@ const normalizePhoneNumber = (phone) => {
   return phone.replace(/[^\d]/g, "");
 };
 
+const fetcher = (url = "", payload = {}, method = "POST") => {
+  return fetch(`https://passbase.e-health.kz:443/passbase/hs/api/${url}`, {
+    method,
+    headers: {
+      Authorization: "Basic d2ViOnB6c09KZX5qbmF+P2VzeWo=",
+      ...payload,
+    },
+  }).then((resp) => resp.json());
+};
+
 const toggleLoader = () => {
   const loader = document.querySelector("#loader");
   loader.classList.toggle("active");
@@ -70,28 +80,88 @@ const hideError = (selector) => {
   element.innerHTML = "";
 };
 
-const pincodeHandler = async (value) => {
-  if (value.length === 4) {
-    hideForm("#sms_form");
-    toggleLoader();
-    setTimeout(() => {
-      toggleLoader();
+let phoneNumber;
 
-      if (getRndInteger(1, 5) < 3) {
-        showForm("#sms_form");
-        showError("#sms_error", "СМС код не найден");
-      } else {
-        showForm("#success_form");
-      }
-    }, 1500);
+const phoneHandler = async (e) => {
+  e.preventDefault();
+  hideForm("#phone_number_form");
+  toggleLoader();
+  try {
+    const organisationId = getOrganizationID();
+    phoneNumber = normalizePhoneNumber(e.target.value); // Проверить
+    const { error } = await fetcher("startPassRecovery", {
+      organisationId,
+      phoneNumber,
+    });
+    if (error) {
+      showForm("#phone_number_form");
+      showError("#phone_number_error", error);
+    } else {
+      showForm("#sms_form");
+    }
+  } catch (error) {
+    showForm("#phone_number_form");
+    showError("#phone_number_error", "Ошибка сети");
+  } finally {
+    toggleLoader();
   }
 };
 
-function getRndInteger(min, max) {
+const pincodeHandler = async (value) => {
+  if (value.length === 6) {
+    hideForm("#sms_form");
+    toggleLoader();
+
+    try {
+      const { error } = await fetcher("completePassRecovery", {
+        phoneNumber,
+        verificationCode: value,
+      });
+      if (error) {
+        showForm("#sms_form");
+        showError("#sms_error", error);
+      } else {
+        showForm("#success_form");
+      }
+    } catch (error) {
+      showForm("#sms_form");
+      showError("#sms_error", "Ошибка сети");
+    } finally {
+      toggleLoader();
+    }
+  }
+};
+
+const getOrganizationID = () => {
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  const { id } = Object.fromEntries(urlSearchParams.entries());
+  return id;
+};
+
+const getRndInteger = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
+
+const checkOrganization = async () => {
+  try {
+    const organisationId = getOrganizationID();
+    const { error } = await fetcher("checkOrganisation", {
+      organisationId,
+    });
+    if (error) {
+      showError("#org_error", error);
+    } else {
+      showForm("#phone_number_form");
+    }
+  } catch (error) {
+    showError("#org_error", "Ошибка сети");
+  } finally {
+    toggleLoader();
+  }
+};
 
 document.addEventListener("DOMContentLoaded", () => {
+  checkOrganization();
   /* 1 форма с телефоном */
   const phoneNumberSubmitBtn = document.querySelector(
     "#phone_number_submit-btn"
@@ -103,27 +173,14 @@ document.addEventListener("DOMContentLoaded", () => {
     phoneNumberSubmitBtn.disabled = e.target.value.length === 18 ? false : true;
   });
 
-  phoneNumberForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    hideForm("#phone_number_form");
-    toggleLoader();
-    setTimeout(() => {
-      toggleLoader();
-      if (getRndInteger(1, 5) < 3) {
-        showForm("#phone_number_form");
-        showError("#phone_number_error", "Ошибка при проверке номера телефона");
-      } else {
-        showForm("#sms_form");
-      }
-    }, 1500);
-  });
+  phoneNumberForm.addEventListener("submit", phoneHandler);
 
   maskPhone("#phone_number_input");
 
   /* 2 форма с смс */
 
   new PincodeInput("#sms_code", {
-    count: 4,
+    count: 6,
     secure: false,
     previewDuration: 200,
     onInput: pincodeHandler,

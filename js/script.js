@@ -84,26 +84,30 @@ let phoneNumber;
 
 const phoneHandler = async (e) => {
   e.preventDefault();
-  hideForm("#phone_number_form");
-  toggleLoader();
-  try {
-    const organisationId = getOrganizationID();
-    phoneNumber = normalizePhoneNumber(e.target.value); // Проверить
-    const { error } = await fetcher("startPassRecovery", {
-      organisationId,
-      phoneNumber,
-    });
-    if (error) {
-      showForm("#phone_number_form");
-      showError("#phone_number_error", error);
-    } else {
-      showForm("#sms_form");
-    }
-  } catch (error) {
-    showForm("#phone_number_form");
-    showError("#phone_number_error", "Ошибка сети");
-  } finally {
+  const value = e.target?.phone_number?.value;
+
+  if (value) {
+    hideForm("#phone_number_form");
     toggleLoader();
+    try {
+      const organisationId = getOrganizationID();
+      phoneNumber = normalizePhoneNumber(value); // Проверить
+      const { error } = await fetcher("startPassRecovery", {
+        organisationId,
+        phoneNumber,
+      });
+      if (error) {
+        showForm("#phone_number_form");
+        showError("#phone_number_error", error);
+      } else {
+        showForm("#sms_form");
+      }
+    } catch (error) {
+      showForm("#phone_number_form");
+      showError("#phone_number_error", "Ошибка сети");
+    } finally {
+      toggleLoader();
+    }
   }
 };
 

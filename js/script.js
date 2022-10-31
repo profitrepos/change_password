@@ -68,16 +68,43 @@ const showForm = (selector) => {
   form.classList.remove("hide");
 };
 
+let currentSelector;
+
+const bodyClickHandler = (e) => {
+  if (!e.target.closest(currentSelector)) {
+    e.preventDefault();
+    hideError(currentSelector);
+  }
+};
+
+const buttonClickHandler = (e) => {
+  e.preventDefault();
+  hideError(currentSelector);
+};
+
 const showError = (selector, text) => {
+  currentSelector = selector;
   const element = document.querySelector(selector);
+  const span = element.querySelector("span");
+  const button = element.querySelector("button");
+
+  button.addEventListener("click", buttonClickHandler);
+  document.body.addEventListener("click", bodyClickHandler);
+
   element.classList.add("show");
-  element.innerHTML = text;
+  span.innerHTML = text;
 };
 
 const hideError = (selector) => {
   const element = document.querySelector(selector);
+  const span = element.querySelector("span");
+  const button = element.querySelector("button", buttonClickHandler);
+
+  button.removeEventListener("click", buttonClickHandler);
+  document.body.removeEventListener("click", bodyClickHandler);
+
   element.classList.remove("show");
-  element.innerHTML = "";
+  span.innerHTML = "";
 };
 
 let phoneNumber;
